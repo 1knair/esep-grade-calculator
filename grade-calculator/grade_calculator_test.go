@@ -128,3 +128,4 @@ func TestPassMode_Fail(t *testing.T) {
 		t.Fatalf("expected Fail, got %s", got)
 	}
 }
+
