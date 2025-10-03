@@ -107,3 +107,24 @@ func TestEmpty(t *testing.T) {
 		t.Fatalf("expected F when only assignments=60 and others empty, got %s", got)
 	}
 }
+func TestPassMode_Pass(t *testing.T) {
+	g := NewGradeCalculator()
+	g.SetPassFail(true)
+	
+		g.AddGrade("a", 100, Assignment) 
+	g.AddGrade("e", 100, Exam)
+	if got := g.GetFinalGrade(); got != "Pass" {
+		t.Fatalf("expected Pass, got %s", got)
+	}
+}
+
+func TestPassMode_Fail(t *testing.T) {
+	g := NewGradeCalculator()
+	g.SetPassFail(true)
+	g.AddGrade("a", 50, Assignment)
+	g.AddGrade("e", 40, Exam)
+	g.AddGrade("s", 40, Essay)
+	if got := g.GetFinalGrade(); got != "Fail" {
+		t.Fatalf("expected Fail, got %s", got)
+	}
+}
