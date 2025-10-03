@@ -10,32 +10,28 @@ const (
 	Essay
 )
 
+type entry struct {
+	cat   Category
+	score int
+}
+
 type GradeCalculator struct {
-	assignments []int
-	exams       []int
-	essays      []int
+	items    []entry
+	passFail bool
 }
 
 // New blank calc
 func NewGradeCalculator() *GradeCalculator {
-	return &GradeCalculator{
-		assignments: []int{},
-		exams:       []int{},
-		essays:      []int{},
-	}
+	return &GradeCalculator{items: []entry{}}
 }
 
 // signature: (name string, score number, category Category)
 func (g *GradeCalculator) AddGrade(name string, score number, category Category) {
-	iv := int(score)
-	switch category {
-	case Assignment:
-		g.assignments = append(g.assignments, iv)
-	case Exam:
-		g.exams = append(g.exams, iv)
-	case Essay:
-		g.essays = append(g.essays, iv)
-	}
+	g.items = append(g.items, entry{cat: category, score: int(score)})
+}
+
+func (g *GradeCalculator) Add(cat Category, score int) {
+	g.items = append(g.items, entry{cat: cat, score: score})
 }
 
 func avg(xs []int) float64 {
@@ -51,15 +47,29 @@ func avg(xs []int) float64 {
 
 // assignments 50; exams 35; essays 15
 func (g *GradeCalculator) FinalNumeric() float64 {
-	a := avg(g.assignments)
-	e := avg(g.exams)
-	s := avg(g.essays)
-	return a*0.50 + e*0.35 + s*0.15
+	var a, e, s []int
+	for _, it := range g.items {
+		switch it.cat {
+		case Assignment:
+			a = append(a, it.score)
+		case Exam:
+			e = append(e, it.score)
+		case Essay:
+			s = append(s, it.score)
+		}
+	}
+	return avg(a)*0.50 + avg(e)*0.35 + avg(s)*0.15
 }
 
-// A/B/C/D/F
+// A/B/C/D/F or pPass/fail
 func (g *GradeCalculator) GetFinalGrade() string {
 	score := g.FinalNumeric()
+	if g.passFail {
+		if score >= 70 {
+			return "Pass"
+		}
+		return "Fail"
+	}
 	switch {
 	case score >= 90:
 		return "A"
@@ -74,18 +84,8 @@ func (g *GradeCalculator) GetFinalGrade() string {
 	}
 }
 
-// wrappers (used in one test)
-func (g *GradeCalculator) Add(cat Category, score int) {
-	switch cat {
-	case Assignment:
-		g.assignments = append(g.assignments, score)
-	case Exam:
-		g.exams = append(g.exams, score)
-	case Essay:
-		g.essays = append(g.essays, score)
-	}
-}
+// wrappers
+func (g *GradeCalculator) GetGrade() string { return g.GetFinalGrade() }
 
-func (g *GradeCalculator) GetGrade() string {
-	return g.GetFinalGrade()
-}
+//  pass/fail switch
+func (g *GradeCalculator) SetPassFail(enabled bool) { g.passFail = enabled }
